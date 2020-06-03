@@ -4,14 +4,8 @@ import click
 import dateparser
 
 from expdb import expdb
-import os
 
-db_path = os.getenv("EXPDB_PATH")
-if db_path is None:
-    db_path = "sqlite:///expdb.db"
-
-db = expdb.ExpDB(db_connection_string=db_path)
-
+db = expdb.ExpDB()
 
 
 @click.group()

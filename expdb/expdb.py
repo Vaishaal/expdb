@@ -3,11 +3,13 @@ import getpass
 import hashlib
 import io
 import json
+import os
 import pathlib
 import pickle
 import uuid
 from datetime import datetime, timezone
 
+from loguru import logger
 import numpy as np
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import \
@@ -30,6 +32,7 @@ def gen_short_uuid(num_chars=None):
         return res2
     else:
         return res2[:num_chars]
+
 
 def is_jsonable(x):
     try:
@@ -109,8 +112,17 @@ class Project(sqlalchemy_base):
 
 class ExpDB(object):
     def __init__(self,
-                 db_connection_string="sqlite:///expdb.db",
+                 db_connection_string=None,
                  sql_verbose=False):
+
+        if db_connection_string is None:
+            EXPDB_PATH = os.getenv("EXPDB_PATH")
+            if EXPDB_PATH is None:
+                logger.error("No connection string nor $EXPDB_PATH provided")
+                assert False
+            else:
+                logger.debug(f"No connection string provided using $EXPDB_PATH={EXPDB_PATH}")        
+                db_connection_string = EXPDB_PATH
         self.sql_verbose = sql_verbose
         self.db_connection_string = db_connection_string
         self.engine = sqla.create_engine(self.db_connection_string,
@@ -206,7 +218,6 @@ class ExpDB(object):
                 *filter_list).all()
 
         return self.run_query_with_optional_session(query, session)
-
 
     def create_experiment(self,
                           *,
@@ -352,8 +363,8 @@ class ExpDB(object):
     def hide_experiment_state(self, experiment_state_uuid):
         with self.session_scope() as session:
             state = self.get_experiment_state(experiment_state_uuid,
-                                             session=session,
-                                             assert_exists=True)
+                                              session=session,
+                                              assert_exists=True)
             state.hidden = True
 
     def hide_project(self, project_name):
@@ -366,10 +377,9 @@ class ExpDB(object):
     def hide_experiment(self, experiment_uuid):
         with self.session_scope() as session:
             exp = self.get_experiment(experiment_uuid,
-                                       session=session,
-                                       assert_exists=True)
+                                      session=session,
+                                      assert_exists=True)
             exp.hidden = True
-
 
 
 
