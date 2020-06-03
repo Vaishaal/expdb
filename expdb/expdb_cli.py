@@ -123,7 +123,7 @@ def list_experiments(show_hidden, show_data, filter_fields, uuid, name_filter,
         else:
             print()
         if show_data:
-            print(f'\tDescription {m.description}')
+            print(f'\tDescription: {m.description}')
             if show_data:
                 keys_to_show = None
                 if filter_fields is not None:
@@ -179,7 +179,7 @@ def list_projects(show_hidden, show_data, filter_fields, uuid, name_filter,
         else:
             print()
         if show_data and len(m.data) > 0:
-            print(f'\tDescription {m.description}')
+            print(f'\tDescription: {m.description}')
             keys_to_show = None
             if filter_fields is not None:
                 keys_to_show = filter_fields.split(',')
@@ -236,7 +236,7 @@ def list_experiment_states(show_hidden, show_data, filter_fields, uuid,
         else:
             print()
         if show_data and len(m.data) > 0:
-            print(f'\tDescription {m.description}')
+            print(f'\tDescription: {m.description}')
             keys_to_show = None
             if filter_fields is not None:
                 keys_to_show = filter_fields.split(',')
