@@ -18,23 +18,40 @@ def hide():
     pass
 
 
-@hide.command(name='evaluations')
+@hide.command(name='experiments')
+@click.option('-a', '--all', '_all', type=str, default=None, is_flag=True)
 @click.option('--uuid', type=str, default=None)
 @click.option('--uuid_list', type=str, default=None)
-def hide_evaluations(uuid, uuid_list):
+@click.option('--before', type=str, default=None)
+@click.option('--after', type=str, default=None)
+def hide_experiments(_all, uuid, uuid_list, before, after):
     if uuid_list is not None:
         assert uuid is None
         for cur_uuid in uuid_list.split(','):
-            if not db.evaluation_uuid_exists(cur_uuid):
-                print(f'{cur_uuid} is not a valid evaluation id')
-            else:
-                db.hide_evaluation(cur_uuid)
-                print(f'evaluation {cur_uuid} is now hidden')
+            db.hide_experiment(cur_uuid)
+            print(f'evaluation {cur_uuid} is now hidden')
     else:
-        evaluations = db.get_evaluations(show_hidden=False)
+        exps = db.get_experiments(show_hidden=False)
+        if after is not None:
+            after_datetime = dateparser.parse(
+                after, settings={'RETURN_AS_TIMEZONE_AWARE': True})
+            exps = [
+                x for x in exps if x.creation_time.replace(
+                    tzinfo=datetime.timezone.utc) >= after_datetime
+            ]
+        if before is not None:
+            before_datetime = dateparser.parse(
+                before, settings={'RETURN_AS_TIMEZONE_AWARE': True})
+            exps = [
+                x for x in exps if x.creation_time.replace(
+                    tzinfo=datetime.timezone.utc) <= before_datetime
+            ]
+        if after is None and before is None:
+            assert _all
+
         num_hidden = 0
-        for m in evaluations:
-            db.hide_evaluation(m.uuid)
+        for m in exps:
+            db.hide_experiment(m.uuid)
             num_hidden += 1
         if num_hidden > 0:
             print(f'Hid {num_hidden} evaluations')
@@ -42,39 +59,6 @@ def hide_evaluations(uuid, uuid_list):
             print('No evaluations to hide')
 
 
-@hide.command(name='models')
-@click.option('--uuid', type=str, default=None)
-@click.option('--uuid_list', type=str, default=None)
-@click.option('--all', "_all", is_flag=True)
-def hide_models(uuid, uuid_list, _all):
-    if uuid is not None:
-        assert uuid_list is None
-        assert not _all
-        if not db.model_uuid_exists(uuid):
-            print(f'{uuid} is not a valid model id')
-        else:
-            db.hide_model(uuid)
-            print(f'Model {uuid} is now hidden')
-    elif uuid_list is not None:
-        assert uuid is None
-        assert not _all
-        for cur_uuid in uuid_list.split(','):
-            if not db.model_uuid_exists(cur_uuid):
-                print(f'{cur_uuid} is not a valid model id')
-            else:
-                db.hide_model(cur_uuid)
-                print(f'Model {cur_uuid} is now hidden')
-    else:
-        assert _all
-        models = db.get_models(show_hidden=False)
-        num_hidden = 0
-        for m in models:
-            db.hide_model(m.uuid)
-            num_hidden += 1
-        if num_hidden > 0:
-            print(f'Hid {num_hidden} models')
-        else:
-            print('No models to hide')
 
 
 @cli.group()
