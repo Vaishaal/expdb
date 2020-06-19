@@ -74,6 +74,7 @@ def list():
 @click.option('--name_filter', type=str, default=None)
 @click.option('--after', type=str, default=None)
 @click.option('--before', type=str, default=None)
+@click.option('--project', type=str, default=None)
 def list_experiments(show_hidden, show_data, filter_fields, uuid, name_filter,
                      after, before):
     exps = db.get_experiments(show_hidden=show_hidden)
@@ -99,6 +100,9 @@ def list_experiments(show_hidden, show_data, filter_fields, uuid, name_filter,
         exp = [x for x in exp if str(uuid) == str(x.uuid)]
 
     for m in exps:
+        if project is not None:
+            if m.project_name != project:
+                continue
         print(
             f'{m.uuid} : creation_time {m.creation_time}  name {m.name} tags: {m.tags}',
             end='')
