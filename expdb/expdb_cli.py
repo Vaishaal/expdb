@@ -76,7 +76,7 @@ def list():
 @click.option('--before', type=str, default=None)
 @click.option('--project', type=str, default=None)
 def list_experiments(show_hidden, show_data, filter_fields, uuid, name_filter,
-                     after, before):
+                     after, before, project):
     exps = db.get_experiments(show_hidden=show_hidden)
     exps = sorted(exps, key=lambda x: x.creation_time)
     if after is not None:
